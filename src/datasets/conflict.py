@@ -1,5 +1,3 @@
-# NOTE: archived for potential v2 use. Not imported by the v1 app and not
-# actively maintained. Last verified against ocha-stratus 0.1.7.
 """Conflict-allocation training frame: Finn xlsx + live ACLED + live IDMC.
 
 Mirrors the storm-side `src/datasets/inform.py` pattern. The book and
