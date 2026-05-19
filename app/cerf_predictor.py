@@ -83,6 +83,7 @@ def _load_data():
         "Cholera": "Cholera",
         "Ebola": "Ebola",
         "Other Health Emergency": "OtherHealth",
+        "Displacement and Conflict": "DisplConfl",
         "Any Other": "Other",
     }
 
@@ -535,10 +536,10 @@ estimate isn't yet available at allocation-decision time. The fit is
 materially weaker (larger prediction interval), so prefer the with-Targeted
 variant whenever possible.
 
-**Features.** Seven emergency-type dummies (base = "Any Other"): Storm,
+**Features.** Eight emergency-type dummies (base = "Any Other"): Storm,
 Flood, Drought, Other Natural Disaster, Cholera, Ebola, Other Health
-Emergency. INFORM Composite (0–10). ln(funding required). ln(people
-targeted) when applicable.
+Emergency, Displacement and Conflict. INFORM Composite (0–10).
+ln(funding required). ln(people targeted) when applicable.
 
 **Data sources.** CERF 3RM v1.8 spreadsheet; INFORM Risk via DRMKC API;
 INFORM Severity via ACAPS (blob). The INFORM Composite is the mean of
