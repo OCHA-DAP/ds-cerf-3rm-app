@@ -1,3 +1,5 @@
+# NOTE: archived for potential v2 use. Not imported by the v1 app and not
+# actively maintained.
 """Conflict-allocation models A and B for CERF rapid-response.
 
 Production specs from `book/02d-analysis-conflict.qmd`. Both fit on the
