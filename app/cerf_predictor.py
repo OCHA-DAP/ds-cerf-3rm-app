@@ -1,4 +1,4 @@
-"""Analyst-facing predictor for CERF rapid-response allocation size.
+"""Analyst-facing estimator for CERF rapid-response allocation size.
 
 Run with: `uv run marimo run app/cerf_predictor.py`
 Or edit with: `uv run marimo edit app/cerf_predictor.py`
@@ -114,7 +114,7 @@ def _intro(mo):
 <div style="font-family: inherit;">
   <h1 style="margin: 0 0 14px 0; color: #55b284; font-size: 2.6em;
              line-height: 1.15; font-weight: 700;">
-    CERF rapid-response allocation predictor
+    CERF rapid-response allocation estimator
   </h1>
   <div style="background: #f5f7fa; border-left: 3px solid #55b284;
               padding: 10px 14px; border-radius: 4px; font-size: 0.92em;
@@ -390,11 +390,11 @@ def _prediction_numbers(mo, result, state):
 
     if state == "missing_inputs":
         numbers = mo.md(
-            "*Enter funding required and people targeted to see a prediction.*"
+            "*Enter funding required and people targeted to see an estimate.*"
         )
     elif state == "no_inform":
         numbers = mo.md(
-            "*Prediction unavailable — no INFORM data for that country/year.*"
+            "*Estimate unavailable — no INFORM data for that country/year.*"
         )
     else:
         _median = result["point_usd_median"]
@@ -503,7 +503,7 @@ def _model_banner(active_model, mo):
 def _prediction_layout(banner, chart, mo, numbers):
     mo.vstack(
         [
-            mo.md("## Predicted allocation"),
+            mo.md("## Estimated allocation"),
             banner,
             mo.hstack(
                 [chart, numbers],
