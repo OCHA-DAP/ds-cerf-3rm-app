@@ -21,7 +21,7 @@ import pandas as pd
 import requests
 
 # Blob locations
-INFORM_BLOB_PATH = "ds-storm-impact-harmonisation/processed/inform.parquet"
+INFORM_BLOB_PATH = "ds-cerf-3rm-app/processed/inform.parquet"
 _3RM_BLOB = (
     "ds-storm-impact-harmonisation/raw/"
     "CERF 3RM - RR Regression Model - version 1.8.xlsx"
