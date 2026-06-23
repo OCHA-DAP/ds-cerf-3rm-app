@@ -7,7 +7,7 @@ name: Build and deploy Python app to Azure Web App - CERF-3RM
 on:
   push:
     branches:
-      - main
+      - port-app
   workflow_dispatch:
 
 jobs:
