@@ -475,7 +475,13 @@ def _prediction_plot(mo, result, state):
         ax.legend(loc="upper right", frameon=False, fontsize=9)
         fig.tight_layout()
 
-        chart = mo.mpl.interactive(fig)
+        # Render as a static image rather than mo.mpl.interactive(): the
+        # interactive WebAgg widget streams the canvas over a comm channel and
+        # ships modern-CSS/JS assets that some corporate networks block, which
+        # left the chart blank in the office while the rest of the page loaded.
+        # A static PNG is embedded server-side like the numbers, so it renders
+        # anywhere the page does.
+        chart = mo.as_html(fig)
     return (chart,)
 
 
