@@ -1,0 +1,39 @@
+name: Refresh INFORM parquet
+
+# Refreshes ds-cerf-3rm-app/processed/inform.parquet on dev blob.
+#   - INFORM Risk: fetched fresh from DRMKC public API (no auth)
+#   - INFORM Severity: read from hdx-signals/output/acaps_inform_severity/raw.parquet
+#     (stage=prod, needs DSCI_AZ_BLOB_PROD_SAS)
+# Merge logic preserves frozen older Risk years; restates only the latest
+# and forward-carries it to current calendar year. Severity is full-refreshed.
+#
+# INFORM Risk republishes annually (late Q4). INFORM Severity republishes
+# monthly. Weekly cadence catches Severity within ~7 days.
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"  # Mondays 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install deps
+        run: uv sync --directory app
+
+      - name: Run refresh
+        env:
+          DSCI_AZ_BLOB_DEV_SAS: ${{ secrets.DSCI_AZ_BLOB_DEV_SAS }}
+          DSCI_AZ_BLOB_PROD_SAS: ${{ secrets.DSCI_AZ_BLOB_PROD_SAS }}
+        run: uv run --directory app python ../scripts/refresh_inform_composite.py

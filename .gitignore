@@ -28,3 +28,6 @@ __marimo__/
 
 # Claude Code
 .claude/
+
+# Generated at deploy time by `uv pip compile` in the Azure workflow
+requirements.txt
