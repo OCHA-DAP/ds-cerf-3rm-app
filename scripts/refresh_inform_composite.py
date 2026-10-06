@@ -1,16 +1,16 @@
 """Refresh the processed INFORM parquet on blob storage.
 
-Reads the existing parquet (if any), fetches fresh Risk + Severity,
+Reads the existing parquet, fetches fresh Risk + Severity,
 and writes back a unified (iso3, year, month, year_month) table with
 raw Risk + Severity columns. The composite is *not* materialized in
 the parquet; it is computed on access by callers.
 
 Incremental behaviour
 ---------------------
-The DRMKC Trends endpoint returns all INFORM Risk years in a single
-call, so we can't actually reduce API load. The "incremental" piece
-is about immutability: older published Risk years are preserved from
-the existing parquet, and only the most-recent year is allowed to be
+The DRMKC Trends endpoint's default workflow returns only the latest
+INFORM Risk year (e.g. "INFORM Risk Mid 2026" returns 2026 only), so
+older published Risk years exist only in the existing parquet. They
+are preserved from it, and only the most-recent year is allowed to be
 restated from a new fetch. INFORM Severity is full-refreshed every
 run (cheap blob read) so late-arriving monthly rows are caught.
 
@@ -26,6 +26,7 @@ from pathlib import Path
 
 import ocha_stratus as stratus
 import pandas as pd
+from azure.core.exceptions import ResourceNotFoundError
 from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -40,13 +41,16 @@ from src.datasets.inform import (  # noqa: E402
 load_dotenv()
 
 
-def _load_existing() -> pd.DataFrame | None:
+def _load_existing() -> pd.DataFrame:
     try:
         df = stratus.load_parquet_from_blob(INFORM_BLOB_PATH)
-    except Exception as exc:  # noqa: BLE001 -- blob-not-found is the main case
-        print(f"No existing parquet at {INFORM_BLOB_PATH} ({type(exc).__name__}); "
-              "will write from scratch.")
-        return None
+    except ResourceNotFoundError as exc:
+        raise FileNotFoundError(
+            f"No existing parquet at {INFORM_BLOB_PATH}. It is the only copy of "
+            "the frozen older INFORM Risk years (the DRMKC API returns only the "
+            "latest year), so it cannot be rebuilt from scratch. Restore it from "
+            "ds-cerf-3rm-app/processed/backups/ before re-running."
+        ) from exc
     df["year"] = df["year"].astype(int)
     df["month"] = df["month"].astype(int)
     df["year_month"] = df["year_month"].astype("period[M]")
@@ -54,18 +58,14 @@ def _load_existing() -> pd.DataFrame | None:
 
 
 def _merge_risk(
-    fresh_risk: pd.DataFrame, existing: pd.DataFrame | None
+    fresh_risk: pd.DataFrame, existing: pd.DataFrame
 ) -> pd.DataFrame:
     """Preserve older Risk years from existing; adopt fresh for latest year.
 
-    If no existing parquet, returns fresh Risk unchanged. Otherwise:
-    keep existing rows for year < max_existing_year, take fresh rows
+    Keep existing rows for year < max_existing_year, take fresh rows
     for year >= max_existing_year (so the latest year gets restated
     if DRMKC updated it).
     """
-    if existing is None:
-        return fresh_risk
-
     existing_risk = (
         existing[["iso3", "year", "inform_risk", "inform_ha",
                   "inform_vu", "inform_cc"]]
