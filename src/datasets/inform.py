@@ -11,7 +11,6 @@ Two audiences:
 
 from __future__ import annotations
 
-from functools import lru_cache
 from io import BytesIO
 from typing import Literal, TypedDict
 
@@ -199,9 +198,13 @@ def build_inform_frame(
 
 # ── Consumers (book + app) ───────────────────────────────────────────
 
-@lru_cache(maxsize=1)
 def load_inform() -> pd.DataFrame:
-    """Read the processed INFORM parquet from blob (cached per process)."""
+    """Read the processed INFORM parquet from blob.
+
+    Not cached: the deployed marimo app runs every session in one long-lived
+    process, so a process cache would keep serving the copy loaded at startup
+    and hide the weekly refreshes until the next restart.
+    """
     df = stratus.load_parquet_from_blob(INFORM_BLOB_PATH)
     df["year"] = df["year"].astype(int)
     df["month"] = df["month"].astype(int)
